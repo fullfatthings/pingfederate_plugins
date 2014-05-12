@@ -136,10 +136,10 @@ public class WKBackOfficeCredentialValidator implements PasswordCredentialValida
             status = httpConnection.getResponseCode();
         }
         catch (MalformedURLException badURLerror) {
-            return null;
+            throw new PasswordValidationException("URL is malformed: " + url);
         }
         catch (IOException connectionError) {
-            return null;
+            throw new PasswordValidationException("Cannot connect to back office at " + url);
         }
 
         if (status == 200)
