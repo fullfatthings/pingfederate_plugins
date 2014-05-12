@@ -115,7 +115,6 @@ public class WKBackOfficeCredentialValidator implements PasswordCredentialValida
         String charset = "UTF-8";
         int status = 0;
 
-
         if (username == null && password == null)
         {
             throw new PasswordValidationException("Invalid username and/or password");
@@ -142,7 +141,7 @@ public class WKBackOfficeCredentialValidator implements PasswordCredentialValida
         if (status == 200)
         {
             attributeMap = new AttributeMap();
-            attributeMap.put("test key", new AttributeValue("test value"));
+            attributeMap.put("username", new AttributeValue("dan@example.com"));
         }
         else
         {
