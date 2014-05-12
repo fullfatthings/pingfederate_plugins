@@ -131,15 +131,20 @@ public class WKBackOfficeCredentialValidator implements PasswordCredentialValida
 
         try {
             HttpURLConnection httpConnection = (HttpURLConnection) new URL(url).openConnection();
+
+            if (this.ignoreStrictSSL) {
+              TrustModifier.relaxHostChecking(httpConnection);
+            }
+
             String encodedAuth = DatatypeConverter.printBase64Binary((username + ":" + password).getBytes("UTF-8"));
             httpConnection.setRequestProperty("Authorization", "Basic " + encodedAuth);
             status = httpConnection.getResponseCode();
         }
-        catch (MalformedURLException badURLerror) {
-            throw new PasswordValidationException("URL is malformed: " + url);
+        catch (MalformedURLException ex) {
+            throw new PasswordValidationException("URL is malformed: " + url + " (" + ex.getMessage() + ")");
         }
-        catch (IOException connectionError) {
-            throw new PasswordValidationException("Cannot connect to back office at " + url);
+        catch (IOException ex) {
+            throw new PasswordValidationException("Cannot connect to back office at " + url + " (" + ex.getMessage() + ")");
         }
 
         if (status == 200)
