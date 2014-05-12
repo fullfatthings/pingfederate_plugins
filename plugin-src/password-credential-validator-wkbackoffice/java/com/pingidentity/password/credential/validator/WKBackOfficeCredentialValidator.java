@@ -40,10 +40,10 @@ public class WKBackOfficeCredentialValidator implements PasswordCredentialValida
 {
     private static String URL = "URL";
     private static String TYPE = "WKBackOffice Credential Validator";
-    private static String IGNORE_STRICT_SSL = "Ensure Valid SSL certificate?";
+    private static String IGNORE_INVALID_SSL = "Ignore invalid SSL certificate?";
 
     String url = null;
-    Boolean ignoreStrictSSL = false;
+    Boolean ignoreInvalidSSL = false;
 
     /**
      * This method is called by the PingFederate server to push configuration values entered by the administrator via
@@ -62,7 +62,7 @@ public class WKBackOfficeCredentialValidator implements PasswordCredentialValida
     public void configure(Configuration configuration)
     {
         this.url = configuration.getFieldValue(URL);
-        this.ignoreStrictSSL = configuration.getBooleanFieldValue(IGNORE_STRICT_SSL);
+        this.ignoreInvalidSSL = configuration.getBooleanFieldValue(IGNORE_INVALID_SSL);
     }
 
     /**
@@ -84,16 +84,8 @@ public class WKBackOfficeCredentialValidator implements PasswordCredentialValida
         urlFieldDescriptor.addValidator(requiredFieldValidator);
         guiDescriptor.addField(urlFieldDescriptor);
 
-        CheckBoxFieldDescriptor strictSSL = new CheckBoxFieldDescriptor(IGNORE_STRICT_SSL, "");
+        CheckBoxFieldDescriptor strictSSL = new CheckBoxFieldDescriptor(IGNORE_INVALID_SSL, "");
         guiDescriptor.addField(strictSSL);
-
-        // TextFieldDescriptor usernameFieldDescriptor = new TextFieldDescriptor(USERNAME, USERNAME);
-        // usernameFieldDescriptor.addValidator(requiredFieldValidator);
-        // guiDescriptor.addField(usernameFieldDescriptor);
-
-        // TextFieldDescriptor passwordFieldDescriptor = new TextFieldDescriptor(PASSWORD, PASSWORD, true);
-        // passwordFieldDescriptor.addValidator(requiredFieldValidator);
-        // guiDescriptor.addField(passwordFieldDescriptor);
 
         PluginDescriptor pluginDescriptor = new PluginDescriptor(TYPE, this, guiDescriptor);
         pluginDescriptor.setAttributeContractSet(Collections.singleton(URL));
@@ -132,7 +124,7 @@ public class WKBackOfficeCredentialValidator implements PasswordCredentialValida
         try {
             HttpURLConnection httpConnection = (HttpURLConnection) new URL(url).openConnection();
 
-            if (this.ignoreStrictSSL) {
+            if (this.ignoreInvalidSSL) {
               TrustModifier.relaxHostChecking(httpConnection);
             }
 
