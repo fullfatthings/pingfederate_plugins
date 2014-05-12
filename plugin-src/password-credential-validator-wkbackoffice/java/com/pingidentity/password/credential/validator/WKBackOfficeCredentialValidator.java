@@ -141,7 +141,7 @@ public class WKBackOfficeCredentialValidator implements PasswordCredentialValida
         if (status == 200)
         {
             attributeMap = new AttributeMap();
-            attributeMap.put("username", new AttributeValue("dan@example.com"));
+            attributeMap.put("username", new AttributeValue(username));
         }
         else
         {
