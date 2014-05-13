@@ -17,7 +17,11 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.io.InputStream;
 import javax.xml.bind.DatatypeConverter;
+import java.io.BufferedReader;
+import java.lang.StringBuilder;
+import java.io.InputStreamReader;
 
 import org.sourceid.saml20.adapter.attribute.AttributeValue;
 import org.sourceid.saml20.adapter.conf.Configuration;
@@ -93,6 +97,28 @@ public class WKBackOfficeCredentialValidator implements PasswordCredentialValida
         return pluginDescriptor;
     }
 
+
+    /**
+     * Turn an into stream into a string.
+     *
+     * @param inputStream
+     *            the inputStream
+     * @param password
+     *            the given password
+     * @throws IOException
+     * @return The inputStream as a String
+     */
+    public String inputStreamToString(InputStream inputStream) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
+        StringBuilder sb = new StringBuilder();
+        String line;
+        while ((line = br.readLine()) != null) {
+            sb.append(line+"\n");
+        }
+        br.close();
+        return sb.toString();
+    }
+
     /**
      * Validates the given username and password in the manner appropriate to the plugin implementation.
      *
@@ -114,6 +140,7 @@ public class WKBackOfficeCredentialValidator implements PasswordCredentialValida
         String url = this.url;
         String charset = "UTF-8";
         int status = 0;
+        String json = "";
 
         if (username == null && password == null)
         {
@@ -130,23 +157,28 @@ public class WKBackOfficeCredentialValidator implements PasswordCredentialValida
             String encodedAuth = DatatypeConverter.printBase64Binary((username + ":" + password).getBytes("UTF-8"));
             httpConnection.setRequestProperty("Authorization", "Basic " + encodedAuth);
             status = httpConnection.getResponseCode();
+
+            if (status == 200) {
+                // Jump through some hoops to get the response as a string.
+                InputStream response = httpConnection.getInputStream();
+                json = inputStreamToString(response);
+
+                attributeMap = new AttributeMap();
+                attributeMap.put("username", new AttributeValue(username));
+                attributeMap.put("first name", new AttributeValue("Dan"));
+                attributeMap.put("last name", new AttributeValue("Singerman"));
+                attributeMap.put("another_attribute", new AttributeValue(json));
+            }
+            else {
+                // authentication failed return null or an empty map
+                return null;
+            }
         }
         catch (MalformedURLException ex) {
             throw new PasswordValidationException("URL is malformed: " + url + " (" + ex.getMessage() + ")");
         }
         catch (IOException ex) {
             throw new PasswordValidationException("Cannot connect to back office at " + url + " (" + ex.getMessage() + ")");
-        }
-
-        if (status == 200)
-        {
-            attributeMap = new AttributeMap();
-            attributeMap.put("username", new AttributeValue(username));
-        }
-        else
-        {
-            // authentication failed return null or an empty map
-            return null;
         }
 
         return attributeMap;
