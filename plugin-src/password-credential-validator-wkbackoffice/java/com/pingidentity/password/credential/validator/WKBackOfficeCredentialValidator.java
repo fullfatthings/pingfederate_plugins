@@ -23,6 +23,13 @@ import java.io.BufferedReader;
 import java.lang.StringBuilder;
 import java.io.InputStreamReader;
 
+// JSON parser
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+import java.util.HashMap;
+
 import org.sourceid.saml20.adapter.attribute.AttributeValue;
 import org.sourceid.saml20.adapter.conf.Configuration;
 import org.sourceid.saml20.adapter.gui.TextFieldDescriptor;
@@ -140,7 +147,7 @@ public class WKBackOfficeCredentialValidator implements PasswordCredentialValida
         String url = this.url;
         String charset = "UTF-8";
         int status = 0;
-        String json = "";
+        String json = "{}";
 
         if (username == null && password == null)
         {
@@ -165,9 +172,32 @@ public class WKBackOfficeCredentialValidator implements PasswordCredentialValida
 
                 attributeMap = new AttributeMap();
                 attributeMap.put("username", new AttributeValue(username));
-                attributeMap.put("first name", new AttributeValue("Dan"));
-                attributeMap.put("last name", new AttributeValue("Singerman"));
-                attributeMap.put("another_attribute", new AttributeValue(json));
+
+                // Return other attributes from JSON.
+                JSONParser parser = new JSONParser();
+                JSONObject jsonObject = (JSONObject) parser.parse(json);
+
+                for ( Object key : jsonObject.keySet() ) {
+                    String sKey = (String) key;
+
+                    if (!sKey.equals("username")) {
+                        try {
+                            Object value = jsonObject.get(sKey);
+                            if (value instanceof String) {
+                                String strValue = (String) value;
+                                attributeMap.put(sKey, new AttributeValue(strValue));
+                            }
+                            else if (value instanceof Number) {
+                                String strValue = value.toString();
+                                attributeMap.put(sKey, new AttributeValue(strValue));
+                            }
+                        }
+                        catch (java.lang.ClassCastException ex) {
+                            // The value of the key cannot be cast to a string, so we'll leave it out of the attributeMap.
+                        }
+                    }
+
+                }
             }
             else {
                 // authentication failed return null or an empty map
@@ -179,6 +209,9 @@ public class WKBackOfficeCredentialValidator implements PasswordCredentialValida
         }
         catch (IOException ex) {
             throw new PasswordValidationException("Cannot connect to back office at " + url + " (" + ex.getMessage() + ")");
+        }
+        catch (ParseException ex) {
+            throw new PasswordValidationException("Error parsing json " + json + " (" + ex.getMessage() + ")");
         }
 
         return attributeMap;
