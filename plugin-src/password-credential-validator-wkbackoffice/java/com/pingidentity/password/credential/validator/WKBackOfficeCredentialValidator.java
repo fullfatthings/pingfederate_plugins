@@ -191,9 +191,17 @@ public class WKBackOfficeCredentialValidator implements PasswordCredentialValida
                                 String strValue = value.toString();
                                 attributeMap.put(sKey, new AttributeValue(strValue));
                             }
+                            else if (value instanceof Boolean) {
+                                if (value) {
+                                    attributeMap.put(sKey, new AttributeValue("true"));
+                                }
+                                else {
+                                    attributeMap.put(sKey, new AttributeValue("false"));
+                                }
+                            }
                         }
                         catch (java.lang.ClassCastException ex) {
-                            // The value of the key cannot be cast to a string, so we'll leave it out of the attributeMap.
+                            // The value of the key cannot be cast, so we'll leave it out of the attributeMap.
                         }
                     }
 
