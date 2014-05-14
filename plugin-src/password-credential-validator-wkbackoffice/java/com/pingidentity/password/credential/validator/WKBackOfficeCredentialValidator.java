@@ -183,21 +183,15 @@ public class WKBackOfficeCredentialValidator implements PasswordCredentialValida
                     if (!sKey.equals("username")) {
                         try {
                             Object value = jsonObject.get(sKey);
+
+                            // We will only support top level Strings, Numbers and Booleans.
                             if (value instanceof String) {
                                 String strValue = (String) value;
                                 attributeMap.put(sKey, new AttributeValue(strValue));
                             }
-                            else if (value instanceof Number) {
+                            else if (value instanceof Number || value instanceof Boolean) {
                                 String strValue = value.toString();
                                 attributeMap.put(sKey, new AttributeValue(strValue));
-                            }
-                            else if (value instanceof Boolean) {
-                                if (value) {
-                                    attributeMap.put(sKey, new AttributeValue("true"));
-                                }
-                                else {
-                                    attributeMap.put(sKey, new AttributeValue("false"));
-                                }
                             }
                         }
                         catch (java.lang.ClassCastException ex) {
