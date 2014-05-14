@@ -28,7 +28,6 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import java.util.HashMap;
 
 import org.sourceid.saml20.adapter.attribute.AttributeValue;
 import org.sourceid.saml20.adapter.conf.Configuration;
